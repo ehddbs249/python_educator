@@ -2,7 +2,6 @@ import streamlit as st
 import sys
 from pathlib import Path
 from streamlit_ace import st_ace
-import extra_streamlit_components as stx
 
 # 프로젝트 루트를 path에 추가
 project_root = Path(__file__).parent.parent
@@ -95,11 +94,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-def get_cookie_manager():
-    """쿠키 매니저 싱글톤"""
-    return stx.CookieManager(key="python_educator_cookies")
-
-
 def init_session_state():
     """세션 상태 초기화"""
     if "chat_history" not in st.session_state:
@@ -126,30 +120,6 @@ def init_session_state():
         st.session_state.problem_result = None  # {"is_correct": bool, "score": int, "feedback": str, "shown_answer": bool}
     if "problem_submitted" not in st.session_state:
         st.session_state.problem_submitted = False
-
-
-def restore_login_from_cookie():
-    """쿠키에서 로그인 상태 복원"""
-    cookie_manager = get_cookie_manager()
-
-    # 이미 로그인 되어 있으면 스킵
-    if st.session_state.user_id:
-        return
-
-    # 쿠키에서 사용자 정보 복원
-    saved_username = cookie_manager.get("username")
-    saved_user_id = cookie_manager.get("user_id")
-
-    if saved_username and saved_user_id:
-        st.session_state.username = saved_username
-        st.session_state.user_id = int(saved_user_id)
-
-
-def save_login_to_cookie(username: str, user_id: int):
-    """로그인 정보를 쿠키에 저장"""
-    cookie_manager = get_cookie_manager()
-    cookie_manager.set("username", username, expires_at=None)  # 세션 쿠키
-    cookie_manager.set("user_id", str(user_id), expires_at=None)
 
 
 def clear_problem_state():
@@ -239,8 +209,6 @@ def login_section():
             user_id = db.get_or_create_user(username.strip())
             st.session_state.username = username.strip()
             st.session_state.user_id = user_id
-            # 쿠키에 로그인 정보 저장
-            save_login_to_cookie(username.strip(), user_id)
             st.rerun()
         else:
             st.warning("닉네임을 입력해주세요.")
@@ -256,10 +224,6 @@ def sidebar():
         if st.session_state.username:
             st.markdown(f"👤 **{st.session_state.username}**님 환영합니다!")
             if st.button("로그아웃", use_container_width=True):
-                # 쿠키 삭제
-                cookie_manager = get_cookie_manager()
-                cookie_manager.delete("username")
-                cookie_manager.delete("user_id")
                 # 세션 상태 초기화
                 st.session_state.username = None
                 st.session_state.user_id = None
@@ -913,9 +877,6 @@ def dashboard_mode():
 def main():
     """메인 함수"""
     init_session_state()
-
-    # 쿠키에서 로그인 상태 복원
-    restore_login_from_cookie()
 
     # 로그인 체크
     if not st.session_state.username:
