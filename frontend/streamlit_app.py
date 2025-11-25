@@ -446,7 +446,6 @@ def problem_mode(topic: TopicCategory, difficulty: DifficultyLevel):
                 height=300,
                 language="python",
                 theme="vs-dark",
-                key="monaco_code_answer",
             )
             # 세션에 코드 저장
             if user_code:
@@ -562,7 +561,6 @@ def review_mode():
         height=400,
         language="python",
         theme="vs-dark",
-        key="monaco_review_code",
     )
     # 세션에 코드 저장
     if user_code:
