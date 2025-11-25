@@ -234,6 +234,7 @@ class ProblemAgent:
             DifficultyLevel.BEGINNER: "입문 (쉬운 난이도, 기본 개념)",
             DifficultyLevel.INTERMEDIATE: "중급 (보통 난이도, 응용)",
             DifficultyLevel.ADVANCED: "고급 (어려운 난이도, 심화)",
+            DifficultyLevel.EXPERT: "전문가 (매우 어려움, 실무/면접 수준, 복잡한 알고리즘, 설계 패턴, 최적화 필수)",
         }
         return mapping.get(difficulty, difficulty.value)
 
@@ -293,7 +294,11 @@ class ProblemAgent:
 
         # 난이도 결정 (정답률 기반)
         total_accuracy = user_stats.get("accuracy", 0)
-        if total_accuracy >= 80:
+        total_attempts = user_stats.get("total_attempts", 0)
+
+        if total_accuracy >= 90 and total_attempts >= 20:
+            difficulty = DifficultyLevel.EXPERT
+        elif total_accuracy >= 75:
             difficulty = DifficultyLevel.ADVANCED
         elif total_accuracy >= 50:
             difficulty = DifficultyLevel.INTERMEDIATE
@@ -309,6 +314,9 @@ class ProblemAgent:
                     break
                 elif diff_stat["difficulty"] == "intermediate" and diff_accuracy < 60:
                     difficulty = DifficultyLevel.INTERMEDIATE
+                    break
+                elif diff_stat["difficulty"] == "advanced" and diff_accuracy >= 85 and diff_stat["attempts"] >= 10:
+                    difficulty = DifficultyLevel.EXPERT
                     break
 
         # 문제 유형 결정

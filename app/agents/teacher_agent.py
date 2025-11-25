@@ -175,6 +175,7 @@ class TeacherAgent:
             DifficultyLevel.BEGINNER: "입문 (기초부터 차근차근)",
             DifficultyLevel.INTERMEDIATE: "중급 (핵심 개념 중심)",
             DifficultyLevel.ADVANCED: "고급 (심화 및 최적화)",
+            DifficultyLevel.EXPERT: "전문가 (실무 수준, 복잡한 설계 패턴, 성능 최적화)",
         }
         return mapping.get(difficulty, difficulty.value)
 

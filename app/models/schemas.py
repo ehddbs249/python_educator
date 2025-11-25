@@ -7,6 +7,7 @@ class DifficultyLevel(str, Enum):
     BEGINNER = "beginner"  # 입문
     INTERMEDIATE = "intermediate"  # 중급
     ADVANCED = "advanced"  # 고급
+    EXPERT = "expert"  # 전문가
 
 
 class ProblemType(str, Enum):

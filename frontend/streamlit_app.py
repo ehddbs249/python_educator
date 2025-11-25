@@ -144,6 +144,7 @@ def get_difficulty_display_name(difficulty) -> str:
         "beginner": "🌱 입문",
         "intermediate": "🌿 중급",
         "advanced": "🌳 고급",
+        "expert": "🔥 전문가",
     }
 
     if hasattr(difficulty, 'value'):
