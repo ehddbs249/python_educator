@@ -1,6 +1,7 @@
-from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
+from langchain_community.chat_models import ChatOllama
+from langchain_anthropic import ChatAnthropic
 
 from app.config import get_settings
 from app.rag.retriever import get_retriever
@@ -37,17 +38,31 @@ TEACHER_SYSTEM_PROMPT = """당신은 컴퓨터공학과 학생들을 위한 Pyth
 """
 
 
+def get_llm():
+    """설정에 따라 LLM 인스턴스 반환"""
+    settings = get_settings()
+
+    if settings.llm_provider == "ollama":
+        return ChatOllama(
+            model=settings.ollama_model,
+            base_url=settings.ollama_base_url,
+            temperature=0.7,
+        )
+    else:
+        return ChatAnthropic(
+            model=settings.anthropic_model,
+            anthropic_api_key=settings.anthropic_api_key,
+            temperature=0.7,
+            max_tokens=4096,
+        )
+
+
 class TeacherAgent:
     """Python 교육 에이전트"""
 
     def __init__(self):
         self.settings = get_settings()
-        self.llm = ChatAnthropic(
-            model=self.settings.model_name,
-            anthropic_api_key=self.settings.anthropic_api_key,
-            temperature=0.7,
-            max_tokens=4096,
-        )
+        self.llm = get_llm()
         self.retriever = get_retriever()
 
     def _get_prompt(self) -> ChatPromptTemplate:

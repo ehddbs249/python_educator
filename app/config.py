@@ -5,9 +5,16 @@ from functools import lru_cache
 class Settings(BaseSettings):
     """Application settings"""
 
-    # Anthropic
+    # LLM Provider: "ollama" or "anthropic"
+    llm_provider: str = "ollama"
+
+    # Ollama
+    ollama_base_url: str = "http://localhost:11434"
+    ollama_model: str = "llama3.2"
+
+    # Anthropic (optional)
     anthropic_api_key: str = ""
-    model_name: str = "claude-3-5-haiku-20241022"
+    anthropic_model: str = "claude-3-5-haiku-20241022"
 
     # ChromaDB
     chroma_persist_directory: str = "./chroma_db"

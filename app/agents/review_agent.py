@@ -2,9 +2,10 @@ import sys
 import io
 import traceback
 from contextlib import redirect_stdout, redirect_stderr
-from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
+from langchain_community.chat_models import ChatOllama
+from langchain_anthropic import ChatAnthropic
 
 from app.config import get_settings
 from app.models.schemas import CodeReviewResult, Problem
@@ -103,17 +104,31 @@ GENERAL_REVIEW_PROMPT = """당신은 Python 코드 리뷰 전문가입니다.
 """
 
 
+def get_llm():
+    """설정에 따라 LLM 인스턴스 반환"""
+    settings = get_settings()
+
+    if settings.llm_provider == "ollama":
+        return ChatOllama(
+            model=settings.ollama_model,
+            base_url=settings.ollama_base_url,
+            temperature=0.3,
+        )
+    else:
+        return ChatAnthropic(
+            model=settings.anthropic_model,
+            anthropic_api_key=settings.anthropic_api_key,
+            temperature=0.3,
+            max_tokens=4096,
+        )
+
+
 class CodeReviewAgent:
     """코드 리뷰 에이전트"""
 
     def __init__(self):
         self.settings = get_settings()
-        self.llm = ChatAnthropic(
-            model=self.settings.model_name,
-            anthropic_api_key=self.settings.anthropic_api_key,
-            temperature=0.3,  # 일관된 리뷰를 위해 낮게
-            max_tokens=4096,
-        )
+        self.llm = get_llm()
 
     def _safe_execute_code(self, code: str, timeout: int = 5) -> dict:
         """
