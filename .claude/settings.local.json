@@ -22,13 +22,16 @@
       "Bash(timeout:*)",
       "Bash(git push:*)",
       "Bash(git reset:*)",
-      "Bash(claude mcp auth:*)"
+      "Bash(claude mcp auth:*)",
+      "Bash(python test:*)",
+      "Bash(C:Usersdonganaconda3python.exe test_supabase.py)",
+      "Bash(C:Usersdonganaconda3python.exe simple_test.py)"
     ],
     "deny": [],
     "ask": []
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }
