@@ -1,7 +1,7 @@
 import streamlit as st
 import sys
 from pathlib import Path
-from streamlit_monaco import st_monaco
+from streamlit_ace import st_ace
 
 # 프로젝트 루트를 path에 추가
 project_root = Path(__file__).parent.parent
@@ -108,6 +108,13 @@ def init_session_state():
         st.session_state.username = None
     if "user_id" not in st.session_state:
         st.session_state.user_id = None
+    # 코드 에디터 상태 초기화
+    if "code_answer" not in st.session_state:
+        st.session_state.code_answer = ""
+    if "review_code" not in st.session_state:
+        st.session_state.review_code = ""
+    if "problem_code_key" not in st.session_state:
+        st.session_state.problem_code_key = 0
 
 
 def get_topic_display_name(topic) -> str:
@@ -439,13 +446,15 @@ def problem_mode(topic: TopicCategory, difficulty: DifficultyLevel):
         elif problem.problem_type in [ProblemType.CODING, ProblemType.ALGORITHM, ProblemType.DEBUGGING]:
             st.markdown("### 💻 코드 작성")
 
-            # Monaco 에디터 사용
+            # Ace 에디터 사용 (key 지원으로 입력 유지)
             default_code = "# 여기에 코드를 작성하세요\n\n"
-            user_code = st_monaco(
+            user_code = st_ace(
                 value=st.session_state.get("code_answer", default_code),
-                height=300,
                 language="python",
-                theme="vs-dark",
+                theme="monokai",
+                height=300,
+                key=f"ace_problem_{st.session_state.problem_code_key}",
+                auto_update=True,
             )
             # 세션에 코드 저장
             if user_code:
@@ -554,13 +563,15 @@ def review_mode():
     st.markdown("## 🔍 코드 리뷰 모드")
     st.markdown("작성한 Python 코드를 리뷰받아보세요!")
 
-    # Monaco 에디터 사용
+    # Ace 에디터 사용 (key 지원으로 입력 유지)
     default_review_code = "# 여기에 Python 코드를 입력하세요\n\ndef example():\n    pass\n"
-    user_code = st_monaco(
+    user_code = st_ace(
         value=st.session_state.get("review_code", default_review_code),
-        height=400,
         language="python",
-        theme="vs-dark",
+        theme="monokai",
+        height=400,
+        key="ace_review_code",
+        auto_update=True,
     )
     # 세션에 코드 저장
     if user_code:
