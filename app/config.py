@@ -19,6 +19,14 @@ class Settings(BaseSettings):
     # ChromaDB
     chroma_persist_directory: str = "./chroma_db"
 
+    # Supabase
+    supabase_url: str = ""
+    supabase_key: str = ""
+    supabase_service_key: str = ""
+
+    # Database Provider: "sqlite" or "supabase"
+    database_provider: str = "sqlite"
+
     # App
     debug: bool = True
 

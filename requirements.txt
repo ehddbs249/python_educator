@@ -19,6 +19,9 @@ streamlit-ace>=0.1.1
 pypdf>=4.0.0
 python-docx>=1.1.0
 
+# Database
+supabase>=2.24.0
+
 # Utilities
 python-dotenv>=1.0.0
 pydantic>=2.5.0
