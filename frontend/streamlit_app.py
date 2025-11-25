@@ -1,6 +1,7 @@
 import streamlit as st
 import sys
 from pathlib import Path
+from streamlit_monaco import st_monaco
 
 # 프로젝트 루트를 path에 추가
 project_root = Path(__file__).parent.parent
@@ -411,11 +412,19 @@ def problem_mode(topic: TopicCategory, difficulty: DifficultyLevel):
         # 코딩/알고리즘 문제인 경우
         elif problem.problem_type in [ProblemType.CODING, ProblemType.ALGORITHM, ProblemType.DEBUGGING]:
             st.markdown("### 💻 코드 작성")
-            user_code = st.text_area(
-                "코드를 입력하세요:",
+
+            # Monaco 에디터 사용
+            default_code = "# 여기에 코드를 작성하세요\n\n"
+            user_code = st_monaco(
+                value=st.session_state.get("code_answer", default_code),
                 height=300,
-                key="code_answer",
+                language="python",
+                theme="vs-dark",
+                key="monaco_code_answer",
             )
+            # 세션에 코드 저장
+            if user_code:
+                st.session_state.code_answer = user_code
 
             col1, col2 = st.columns(2)
             with col1:
@@ -520,11 +529,18 @@ def review_mode():
     st.markdown("## 🔍 코드 리뷰 모드")
     st.markdown("작성한 Python 코드를 리뷰받아보세요!")
 
-    user_code = st.text_area(
-        "리뷰받을 코드를 입력하세요:",
+    # Monaco 에디터 사용
+    default_review_code = "# 여기에 Python 코드를 입력하세요\n\ndef example():\n    pass\n"
+    user_code = st_monaco(
+        value=st.session_state.get("review_code", default_review_code),
         height=400,
-        placeholder="# 여기에 Python 코드를 입력하세요\n\ndef example():\n    pass",
+        language="python",
+        theme="vs-dark",
+        key="monaco_review_code",
     )
+    # 세션에 코드 저장
+    if user_code:
+        st.session_state.review_code = user_code
 
     if st.button("🔍 코드 리뷰 받기", use_container_width=True):
         if user_code.strip():
