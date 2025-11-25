@@ -2,6 +2,7 @@ import streamlit as st
 import sys
 from pathlib import Path
 from streamlit_ace import st_ace
+import extra_streamlit_components as stx
 
 # 프로젝트 루트를 path에 추가
 project_root = Path(__file__).parent.parent
@@ -94,6 +95,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+def get_cookie_manager():
+    """쿠키 매니저 싱글톤"""
+    return stx.CookieManager(key="python_educator_cookies")
+
+
 def init_session_state():
     """세션 상태 초기화"""
     if "chat_history" not in st.session_state:
@@ -115,6 +121,43 @@ def init_session_state():
         st.session_state.review_code = ""
     if "problem_code_key" not in st.session_state:
         st.session_state.problem_code_key = 0
+    # 문제 풀이 결과 상태
+    if "problem_result" not in st.session_state:
+        st.session_state.problem_result = None  # {"is_correct": bool, "score": int, "feedback": str, "shown_answer": bool}
+    if "problem_submitted" not in st.session_state:
+        st.session_state.problem_submitted = False
+
+
+def restore_login_from_cookie():
+    """쿠키에서 로그인 상태 복원"""
+    cookie_manager = get_cookie_manager()
+
+    # 이미 로그인 되어 있으면 스킵
+    if st.session_state.user_id:
+        return
+
+    # 쿠키에서 사용자 정보 복원
+    saved_username = cookie_manager.get("username")
+    saved_user_id = cookie_manager.get("user_id")
+
+    if saved_username and saved_user_id:
+        st.session_state.username = saved_username
+        st.session_state.user_id = int(saved_user_id)
+
+
+def save_login_to_cookie(username: str, user_id: int):
+    """로그인 정보를 쿠키에 저장"""
+    cookie_manager = get_cookie_manager()
+    cookie_manager.set("username", username, expires_at=None)  # 세션 쿠키
+    cookie_manager.set("user_id", str(user_id), expires_at=None)
+
+
+def clear_problem_state():
+    """새 문제 생성 시 이전 상태 초기화"""
+    st.session_state.problem_result = None
+    st.session_state.problem_submitted = False
+    st.session_state.code_answer = ""
+    st.session_state.problem_code_key += 1
 
 
 def get_topic_display_name(topic) -> str:
@@ -196,6 +239,8 @@ def login_section():
             user_id = db.get_or_create_user(username.strip())
             st.session_state.username = username.strip()
             st.session_state.user_id = user_id
+            # 쿠키에 로그인 정보 저장
+            save_login_to_cookie(username.strip(), user_id)
             st.rerun()
         else:
             st.warning("닉네임을 입력해주세요.")
@@ -211,10 +256,17 @@ def sidebar():
         if st.session_state.username:
             st.markdown(f"👤 **{st.session_state.username}**님 환영합니다!")
             if st.button("로그아웃", use_container_width=True):
+                # 쿠키 삭제
+                cookie_manager = get_cookie_manager()
+                cookie_manager.delete("username")
+                cookie_manager.delete("user_id")
+                # 세션 상태 초기화
                 st.session_state.username = None
                 st.session_state.user_id = None
                 st.session_state.chat_history = []
                 st.session_state.current_problem = None
+                st.session_state.problem_result = None
+                st.session_state.problem_submitted = False
                 st.rerun()
             st.markdown("---")
 
@@ -361,6 +413,8 @@ def problem_mode(topic: TopicCategory, difficulty: DifficultyLevel):
                     if problems:
                         st.session_state.current_problem = problems[0]
                         st.session_state.hint_index = 0
+                        # 이전 문제 풀이 상태 초기화
+                        clear_problem_state()
                         st.rerun()
                     else:
                         st.error("문제 생성에 실패했습니다. 다시 시도해주세요.")
@@ -383,6 +437,8 @@ def problem_mode(topic: TopicCategory, difficulty: DifficultyLevel):
                         if problems:
                             st.session_state.current_problem = problems[0]
                             st.session_state.hint_index = 0
+                            # 이전 문제 풀이 상태 초기화
+                            clear_problem_state()
                             st.success("📊 학습 이력을 분석하여 맞춤형 문제를 생성했습니다!")
                             st.rerun()
                         else:
@@ -416,9 +472,25 @@ def problem_mode(topic: TopicCategory, difficulty: DifficultyLevel):
                 key="mc_answer",
             )
 
-            if st.button("정답 확인"):
+            # 이미 제출된 결과가 있으면 표시
+            if st.session_state.problem_submitted and st.session_state.problem_result:
+                result = st.session_state.problem_result
+                if result.get("is_correct"):
+                    st.success("🎉 정답입니다!")
+                else:
+                    st.error(f"❌ 오답입니다. 정답: {problem.answer}")
+                st.markdown(f"**해설:** {problem.explanation}")
+            elif st.button("정답 확인"):
                 is_correct = user_answer == problem.answer
                 score = 100 if is_correct else 0
+
+                # 결과를 세션에 저장
+                st.session_state.problem_result = {
+                    "is_correct": is_correct,
+                    "score": score,
+                    "user_answer": user_answer,
+                }
+                st.session_state.problem_submitted = True
 
                 if is_correct:
                     st.success("🎉 정답입니다!")
@@ -460,74 +532,141 @@ def problem_mode(topic: TopicCategory, difficulty: DifficultyLevel):
             if user_code:
                 st.session_state.code_answer = user_code
 
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("제출하기", use_container_width=True):
-                    if user_code.strip():
-                        with st.spinner("코드 검토 중..."):
-                            try:
-                                review_agent = get_review_agent()
-                                result = review_agent.review_submission_sync(
-                                    code=user_code,
-                                    problem=problem,
-                                )
+            # 이미 제출된 결과가 있으면 표시
+            if st.session_state.problem_submitted and st.session_state.problem_result:
+                saved_result = st.session_state.problem_result
+                if saved_result.get("is_correct"):
+                    st.success(f"🎉 정답입니다! (점수: {saved_result.get('score', 0)}/100)")
+                else:
+                    st.warning(f"아쉽네요! (점수: {saved_result.get('score', 0)}/100)")
 
-                                if result.is_correct:
-                                    st.success(f"🎉 정답입니다! (점수: {result.score}/100)")
-                                else:
-                                    st.warning(f"아쉽네요! (점수: {result.score}/100)")
+                st.markdown("### 📝 피드백")
+                st.markdown(saved_result.get("feedback", ""))
 
-                                st.markdown("### 📝 피드백")
-                                st.markdown(result.feedback)
+                if saved_result.get("suggestions"):
+                    st.markdown("### 💡 개선 제안")
+                    for suggestion in saved_result["suggestions"]:
+                        st.markdown(f"- {suggestion}")
 
-                                if result.suggestions:
-                                    st.markdown("### 💡 개선 제안")
-                                    for suggestion in result.suggestions:
-                                        st.markdown(f"- {suggestion}")
+                if saved_result.get("improved_code"):
+                    st.markdown("### ✨ 개선된 코드")
+                    st.code(saved_result["improved_code"], language="python")
 
-                                if result.improved_code:
-                                    st.markdown("### ✨ 개선된 코드")
-                                    st.code(result.improved_code, language="python")
-
-                                # DB에 저장
-                                if st.session_state.user_id:
-                                    db = get_db_manager()
-                                    db.save_problem_attempt(
-                                        user_id=st.session_state.user_id,
-                                        problem_type=problem.problem_type.value,
-                                        topic=problem.topic.value,
-                                        difficulty=problem.difficulty.value,
-                                        question=problem.question,
-                                        user_answer=user_code,
-                                        correct_answer=problem.answer,
-                                        is_correct=result.is_correct,
-                                        score=result.score,
-                                        feedback=result.feedback
-                                    )
-
-                            except Exception as e:
-                                st.error(f"오류가 발생했습니다: {str(e)}")
-                    else:
-                        st.warning("코드를 입력해주세요.")
-
-            with col2:
-                if st.button("정답 보기", use_container_width=True):
+                if saved_result.get("shown_answer"):
                     st.markdown("### ✅ 정답")
                     st.code(problem.answer, language="python")
                     st.markdown(f"**해설:** {problem.explanation}")
+            else:
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("제출하기", use_container_width=True):
+                        if user_code.strip():
+                            with st.spinner("코드 검토 중..."):
+                                try:
+                                    review_agent = get_review_agent()
+                                    result = review_agent.review_submission_sync(
+                                        code=user_code,
+                                        problem=problem,
+                                    )
+
+                                    # 결과를 세션에 저장
+                                    st.session_state.problem_result = {
+                                        "is_correct": result.is_correct,
+                                        "score": result.score,
+                                        "feedback": result.feedback,
+                                        "suggestions": result.suggestions,
+                                        "improved_code": result.improved_code,
+                                        "user_code": user_code,
+                                        "shown_answer": False,
+                                    }
+                                    st.session_state.problem_submitted = True
+
+                                    if result.is_correct:
+                                        st.success(f"🎉 정답입니다! (점수: {result.score}/100)")
+                                    else:
+                                        st.warning(f"아쉽네요! (점수: {result.score}/100)")
+
+                                    st.markdown("### 📝 피드백")
+                                    st.markdown(result.feedback)
+
+                                    if result.suggestions:
+                                        st.markdown("### 💡 개선 제안")
+                                        for suggestion in result.suggestions:
+                                            st.markdown(f"- {suggestion}")
+
+                                    if result.improved_code:
+                                        st.markdown("### ✨ 개선된 코드")
+                                        st.code(result.improved_code, language="python")
+
+                                    # DB에 저장
+                                    if st.session_state.user_id:
+                                        db = get_db_manager()
+                                        db.save_problem_attempt(
+                                            user_id=st.session_state.user_id,
+                                            problem_type=problem.problem_type.value,
+                                            topic=problem.topic.value,
+                                            difficulty=problem.difficulty.value,
+                                            question=problem.question,
+                                            user_answer=user_code,
+                                            correct_answer=problem.answer,
+                                            is_correct=result.is_correct,
+                                            score=result.score,
+                                            feedback=result.feedback
+                                        )
+
+                                except Exception as e:
+                                    st.error(f"오류가 발생했습니다: {str(e)}")
+                        else:
+                            st.warning("코드를 입력해주세요.")
+
+                with col2:
+                    if st.button("정답 보기", use_container_width=True):
+                        # 정답 보기 상태 저장
+                        if st.session_state.problem_result is None:
+                            st.session_state.problem_result = {}
+                        st.session_state.problem_result["shown_answer"] = True
+                        st.session_state.problem_submitted = True
+
+                        st.markdown("### ✅ 정답")
+                        st.code(problem.answer, language="python")
+                        st.markdown(f"**해설:** {problem.explanation}")
 
         # 단답형인 경우
         else:
             user_answer = st.text_input("정답을 입력하세요:")
-            if st.button("정답 확인"):
+
+            # 이미 제출된 결과가 있으면 표시
+            if st.session_state.problem_submitted and st.session_state.problem_result:
+                saved_result = st.session_state.problem_result
+                if saved_result.get("is_correct"):
+                    st.success("🎉 정답입니다!")
+                else:
+                    st.error("❌ 오답입니다.")
+                st.markdown(f"**정답:** {problem.answer}")
+                st.markdown(f"**해설:** {problem.explanation}")
+            elif st.button("정답 확인"):
+                # 단순 비교 (실제로는 더 정교한 비교 필요)
+                is_correct = user_answer.strip().lower() == problem.answer.strip().lower()
+                score = 100 if is_correct else 0
+
+                # 결과를 세션에 저장
+                st.session_state.problem_result = {
+                    "is_correct": is_correct,
+                    "score": score,
+                    "user_answer": user_answer,
+                }
+                st.session_state.problem_submitted = True
+
+                if is_correct:
+                    st.success("🎉 정답입니다!")
+                else:
+                    st.error("❌ 오답입니다.")
                 st.markdown(f"**정답:** {problem.answer}")
                 st.markdown(f"**해설:** {problem.explanation}")
 
                 # DB에 저장
                 if st.session_state.user_id:
                     db = get_db_manager()
-                    # 단순 비교 (실제로는 더 정교한 비교 필요)
-                    is_correct = user_answer.strip().lower() == problem.answer.strip().lower()
                     db.save_problem_attempt(
                         user_id=st.session_state.user_id,
                         problem_type=problem.problem_type.value,
@@ -537,7 +676,7 @@ def problem_mode(topic: TopicCategory, difficulty: DifficultyLevel):
                         user_answer=user_answer,
                         correct_answer=problem.answer,
                         is_correct=is_correct,
-                        score=100 if is_correct else 0,
+                        score=score,
                         feedback=problem.explanation
                     )
 
@@ -774,6 +913,9 @@ def dashboard_mode():
 def main():
     """메인 함수"""
     init_session_state()
+
+    # 쿠키에서 로그인 상태 복원
+    restore_login_from_cookie()
 
     # 로그인 체크
     if not st.session_state.username:
