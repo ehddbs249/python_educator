@@ -1,7 +1,6 @@
 from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
-from langchain.schema.runnable import RunnablePassthrough
 
 from app.config import get_settings
 from app.rag.retriever import get_retriever

@@ -1,4 +1,4 @@
-from langchain.schema import Document
+from langchain_core.documents import Document
 from app.rag.vectorstore import get_vectorstore_manager
 from app.models.schemas import TopicCategory, DifficultyLevel
 
