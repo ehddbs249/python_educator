@@ -327,7 +327,7 @@ def problem_mode(topic: TopicCategory, difficulty: DifficultyLevel):
     st.markdown("## 📝 문제 풀기 모드")
 
     # 문제 유형 선택
-    col1, col2 = st.columns([2, 1])
+    col1, col2, col3 = st.columns([2, 1, 1])
 
     with col1:
         problem_type_options = list(ProblemType)
@@ -358,6 +358,31 @@ def problem_mode(topic: TopicCategory, difficulty: DifficultyLevel):
                         st.error("문제 생성에 실패했습니다. 다시 시도해주세요.")
                 except Exception as e:
                     st.error(f"오류가 발생했습니다: {str(e)}")
+
+    with col3:
+        # 적응형 문제 출제 버튼
+        if st.button("🎯 맞춤 문제", use_container_width=True, help="학습 이력 기반 맞춤형 문제 출제"):
+            if st.session_state.user_id:
+                with st.spinner("맞춤형 문제 생성 중..."):
+                    try:
+                        db = get_db_manager()
+                        user_stats = db.get_user_statistics(st.session_state.user_id)
+                        problem_agent = get_problem_agent()
+                        problems = problem_agent.generate_adaptive_problem_sync(
+                            user_stats=user_stats,
+                            problem_type=selected_problem_type,
+                        )
+                        if problems:
+                            st.session_state.current_problem = problems[0]
+                            st.session_state.hint_index = 0
+                            st.success("📊 학습 이력을 분석하여 맞춤형 문제를 생성했습니다!")
+                            st.rerun()
+                        else:
+                            st.error("문제 생성에 실패했습니다. 다시 시도해주세요.")
+                    except Exception as e:
+                        st.error(f"오류가 발생했습니다: {str(e)}")
+            else:
+                st.warning("맞춤형 문제를 받으려면 먼저 로그인해주세요.")
 
     # 현재 문제 표시
     if st.session_state.current_problem:
@@ -666,19 +691,39 @@ def dashboard_mode():
         else:
             st.info("아직 풀이 기록이 없습니다.")
 
-    # 취약 주제
-    st.markdown("### ⚠️ 취약 주제 (집중 학습 필요)")
-    if stats['weak_topics']:
-        for weak in stats['weak_topics']:
-            topic_name = get_topic_display_name(weak['topic'])
-            accuracy = weak['accuracy']
-            st.markdown(f"""
-            <div class="weak-topic">
-                <strong>{topic_name}</strong> - 정답률: {accuracy:.1f}% ({weak['attempts']}문제 풀이)
-            </div>
-            """, unsafe_allow_html=True)
-    else:
-        st.success("취약한 주제가 없습니다! 모든 주제를 잘 학습하고 계시네요. 👏")
+    # 취약 주제 및 추천 학습
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("### ⚠️ 취약 주제 (집중 학습 필요)")
+        if stats['weak_topics']:
+            for weak in stats['weak_topics']:
+                topic_name = get_topic_display_name(weak['topic'])
+                accuracy = weak['accuracy']
+                st.markdown(f"""
+                <div class="weak-topic">
+                    <strong>{topic_name}</strong> - 정답률: {accuracy:.1f}% ({weak['attempts']}문제 풀이)
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.success("취약한 주제가 없습니다! 👏")
+
+    with col2:
+        st.markdown("### 📚 추천 학습 주제")
+        problem_agent = get_problem_agent()
+        recommendations = problem_agent.get_recommended_topics(stats)
+        if recommendations:
+            for rec in recommendations:
+                topic_name = get_topic_display_name(rec['topic'])
+                priority_icon = "🔴" if rec['priority'] == "high" else "🟡"
+                st.markdown(f"""
+                <div style="background-color: #e8f5e9; padding: 0.5rem 1rem; margin: 0.3rem 0; border-radius: 5px; border-left: 4px solid #4caf50;">
+                    {priority_icon} <strong>{topic_name}</strong><br/>
+                    <small>{rec['reason']}</small>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("모든 주제를 골고루 학습하셨습니다!")
 
     # 최근 활동
     st.markdown("### 📅 최근 7일 학습 활동")

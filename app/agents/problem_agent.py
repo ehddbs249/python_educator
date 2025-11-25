@@ -247,6 +247,119 @@ class ProblemAgent:
         }
         return mapping.get(problem_type, problem_type.value)
 
+    def generate_adaptive_problem_sync(
+        self,
+        user_stats: dict,
+        problem_type: ProblemType = None,
+    ) -> list[Problem]:
+        """
+        사용자 학습 통계 기반 적응형 문제 생성
+
+        Args:
+            user_stats: 사용자 학습 통계 (get_user_statistics 결과)
+            problem_type: 문제 유형 (None이면 자동 선택)
+
+        Returns:
+            맞춤형 문제 리스트
+        """
+        import random
+
+        # 취약 주제 분석
+        weak_topics = user_stats.get("weak_topics", [])
+        by_topic = user_stats.get("by_topic", [])
+        by_difficulty = user_stats.get("by_difficulty", [])
+
+        # 출제할 주제 결정
+        if weak_topics:
+            # 취약 주제가 있으면 그 중에서 선택
+            weak_topic_name = random.choice(weak_topics)["topic"]
+            try:
+                topic = TopicCategory(weak_topic_name)
+            except ValueError:
+                topic = TopicCategory.BASICS
+        elif by_topic:
+            # 학습한 주제 중 정답률 낮은 주제
+            sorted_topics = sorted(
+                by_topic,
+                key=lambda x: (x["correct"] or 0) / x["attempts"] if x["attempts"] > 0 else 1
+            )
+            try:
+                topic = TopicCategory(sorted_topics[0]["topic"])
+            except (ValueError, IndexError):
+                topic = TopicCategory.BASICS
+        else:
+            # 기록이 없으면 기초부터
+            topic = TopicCategory.BASICS
+
+        # 난이도 결정 (정답률 기반)
+        total_accuracy = user_stats.get("accuracy", 0)
+        if total_accuracy >= 80:
+            difficulty = DifficultyLevel.ADVANCED
+        elif total_accuracy >= 50:
+            difficulty = DifficultyLevel.INTERMEDIATE
+        else:
+            difficulty = DifficultyLevel.BEGINNER
+
+        # 난이도별 통계 확인하여 조정
+        if by_difficulty:
+            for diff_stat in by_difficulty:
+                diff_accuracy = (diff_stat["correct"] or 0) / diff_stat["attempts"] * 100 if diff_stat["attempts"] > 0 else 0
+                if diff_stat["difficulty"] == "beginner" and diff_accuracy < 70:
+                    difficulty = DifficultyLevel.BEGINNER
+                    break
+                elif diff_stat["difficulty"] == "intermediate" and diff_accuracy < 60:
+                    difficulty = DifficultyLevel.INTERMEDIATE
+                    break
+
+        # 문제 유형 결정
+        if problem_type is None:
+            problem_type = random.choice(list(ProblemType))
+
+        # 문제 생성
+        return self.generate_problems_sync(
+            topic=topic,
+            difficulty=difficulty,
+            problem_type=problem_type,
+            count=1
+        )
+
+    def get_recommended_topics(self, user_stats: dict) -> list[dict]:
+        """
+        사용자에게 추천할 학습 주제 반환
+
+        Returns:
+            추천 주제 리스트 (주제, 이유, 추천 난이도)
+        """
+        recommendations = []
+        weak_topics = user_stats.get("weak_topics", [])
+        by_topic = user_stats.get("by_topic", [])
+
+        # 취약 주제 추천
+        for weak in weak_topics:
+            topic_name = weak["topic"]
+            accuracy = weak["accuracy"]
+            recommendations.append({
+                "topic": topic_name,
+                "reason": f"정답률 {accuracy:.1f}%로 보충 학습이 필요합니다",
+                "difficulty": "beginner" if accuracy < 40 else "intermediate",
+                "priority": "high"
+            })
+
+        # 학습하지 않은 주제 추천
+        studied_topics = {t["topic"] for t in by_topic}
+        all_topics = {t.value for t in TopicCategory}
+        unstudied = all_topics - studied_topics
+
+        for topic in unstudied:
+            recommendations.append({
+                "topic": topic,
+                "reason": "아직 학습하지 않은 주제입니다",
+                "difficulty": "beginner",
+                "priority": "medium"
+            })
+
+        return recommendations[:5]  # 최대 5개 추천
+
 
 # 싱글톤 인스턴스
 _problem_agent = None
