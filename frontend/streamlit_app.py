@@ -1,0 +1,429 @@
+import streamlit as st
+import sys
+from pathlib import Path
+
+# 프로젝트 루트를 path에 추가
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+from app.agents import get_teacher_agent, get_problem_agent, get_review_agent
+from app.models.schemas import (
+    TopicCategory,
+    DifficultyLevel,
+    ProblemType,
+)
+
+# 페이지 설정
+st.set_page_config(
+    page_title="Python 교육 에이전트",
+    page_icon="🐍",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# CSS 스타일
+st.markdown("""
+<style>
+    .main-header {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #1E88E5;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .mode-card {
+        background-color: #f0f2f6;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+    }
+    .problem-box {
+        background-color: #e3f2fd;
+        border-left: 4px solid #1E88E5;
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 0 10px 10px 0;
+    }
+    .hint-box {
+        background-color: #fff3e0;
+        border-left: 4px solid #ff9800;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        border-radius: 0 10px 10px 0;
+    }
+    .success-box {
+        background-color: #e8f5e9;
+        border-left: 4px solid #4caf50;
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 0 10px 10px 0;
+    }
+    .error-box {
+        background-color: #ffebee;
+        border-left: 4px solid #f44336;
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 0 10px 10px 0;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
+def init_session_state():
+    """세션 상태 초기화"""
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+    if "current_problem" not in st.session_state:
+        st.session_state.current_problem = None
+    if "hint_index" not in st.session_state:
+        st.session_state.hint_index = 0
+    if "mode" not in st.session_state:
+        st.session_state.mode = "학습"
+
+
+def get_topic_display_name(topic: TopicCategory) -> str:
+    """주제 한글 이름"""
+    mapping = {
+        TopicCategory.BASICS: "🔤 기초 문법",
+        TopicCategory.DATA_STRUCTURES: "📊 자료구조",
+        TopicCategory.ALGORITHMS: "⚡ 알고리즘",
+        TopicCategory.OOP: "🏗️ 객체지향",
+        TopicCategory.FILE_IO: "📁 파일 입출력",
+        TopicCategory.EXCEPTIONS: "⚠️ 예외 처리",
+        TopicCategory.MODULES: "📦 모듈/패키지",
+        TopicCategory.FUNCTIONS: "🔧 함수",
+    }
+    return mapping.get(topic, topic.value)
+
+
+def get_difficulty_display_name(difficulty: DifficultyLevel) -> str:
+    """난이도 한글 이름"""
+    mapping = {
+        DifficultyLevel.BEGINNER: "🌱 입문",
+        DifficultyLevel.INTERMEDIATE: "🌿 중급",
+        DifficultyLevel.ADVANCED: "🌳 고급",
+    }
+    return mapping.get(difficulty, difficulty.value)
+
+
+def get_problem_type_display_name(problem_type: ProblemType) -> str:
+    """문제 유형 한글 이름"""
+    mapping = {
+        ProblemType.MULTIPLE_CHOICE: "📝 객관식",
+        ProblemType.CODING: "💻 코딩",
+        ProblemType.DEBUGGING: "🔍 디버깅",
+        ProblemType.ALGORITHM: "🧮 알고리즘",
+        ProblemType.SHORT_ANSWER: "✏️ 단답형",
+    }
+    return mapping.get(problem_type, problem_type.value)
+
+
+def sidebar():
+    """사이드바 구성"""
+    with st.sidebar:
+        st.markdown("## 🐍 Python 교육 에이전트")
+        st.markdown("---")
+
+        # 모드 선택
+        mode = st.radio(
+            "📚 학습 모드",
+            ["학습", "문제 풀기", "코드 리뷰"],
+            index=["학습", "문제 풀기", "코드 리뷰"].index(st.session_state.mode),
+        )
+        st.session_state.mode = mode
+
+        st.markdown("---")
+
+        # 주제 선택
+        topic_options = list(TopicCategory)
+        topic_display = [get_topic_display_name(t) for t in topic_options]
+        selected_topic_idx = st.selectbox(
+            "📖 주제 선택",
+            range(len(topic_options)),
+            format_func=lambda x: topic_display[x],
+        )
+        selected_topic = topic_options[selected_topic_idx]
+
+        # 난이도 선택
+        difficulty_options = list(DifficultyLevel)
+        difficulty_display = [get_difficulty_display_name(d) for d in difficulty_options]
+        selected_difficulty_idx = st.selectbox(
+            "📈 난이도 선택",
+            range(len(difficulty_options)),
+            format_func=lambda x: difficulty_display[x],
+        )
+        selected_difficulty = difficulty_options[selected_difficulty_idx]
+
+        st.markdown("---")
+
+        # 대화 초기화
+        if st.button("🗑️ 대화 초기화", use_container_width=True):
+            st.session_state.chat_history = []
+            st.session_state.current_problem = None
+            st.session_state.hint_index = 0
+            st.rerun()
+
+        st.markdown("---")
+        st.markdown("### ℹ️ 도움말")
+        st.markdown("""
+        - **학습 모드**: Python 개념을 질문하고 배워보세요
+        - **문제 풀기**: 다양한 유형의 문제를 풀어보세요
+        - **코드 리뷰**: 작성한 코드를 리뷰받아보세요
+        """)
+
+        return selected_topic, selected_difficulty
+
+
+def learning_mode(topic: TopicCategory, difficulty: DifficultyLevel):
+    """학습 모드 UI"""
+    st.markdown("## 🎓 학습 모드")
+    st.markdown("Python 개념에 대해 질문해보세요!")
+
+    # 채팅 히스토리 표시
+    for msg in st.session_state.chat_history:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+
+    # 사용자 입력
+    user_input = st.chat_input("질문을 입력하세요...")
+
+    if user_input:
+        # 사용자 메시지 추가
+        st.session_state.chat_history.append({
+            "role": "user",
+            "content": user_input,
+        })
+
+        with st.chat_message("user"):
+            st.markdown(user_input)
+
+        # AI 응답 생성
+        with st.chat_message("assistant"):
+            with st.spinner("생각하는 중..."):
+                try:
+                    teacher = get_teacher_agent()
+                    response = teacher.teach_sync(
+                        question=user_input,
+                        topic=topic,
+                        difficulty=difficulty,
+                        chat_history=st.session_state.chat_history[:-1],
+                    )
+                    st.markdown(response)
+
+                    # 응답 저장
+                    st.session_state.chat_history.append({
+                        "role": "assistant",
+                        "content": response,
+                    })
+                except Exception as e:
+                    st.error(f"오류가 발생했습니다: {str(e)}")
+
+
+def problem_mode(topic: TopicCategory, difficulty: DifficultyLevel):
+    """문제 풀기 모드 UI"""
+    st.markdown("## 📝 문제 풀기 모드")
+
+    # 문제 유형 선택
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        problem_type_options = list(ProblemType)
+        problem_type_display = [get_problem_type_display_name(p) for p in problem_type_options]
+        selected_type_idx = st.selectbox(
+            "문제 유형",
+            range(len(problem_type_options)),
+            format_func=lambda x: problem_type_display[x],
+        )
+        selected_problem_type = problem_type_options[selected_type_idx]
+
+    with col2:
+        if st.button("🎲 새 문제 생성", use_container_width=True):
+            with st.spinner("문제 생성 중..."):
+                try:
+                    problem_agent = get_problem_agent()
+                    problems = problem_agent.generate_problems_sync(
+                        topic=topic,
+                        difficulty=difficulty,
+                        problem_type=selected_problem_type,
+                        count=1,
+                    )
+                    if problems:
+                        st.session_state.current_problem = problems[0]
+                        st.session_state.hint_index = 0
+                        st.rerun()
+                    else:
+                        st.error("문제 생성에 실패했습니다. 다시 시도해주세요.")
+                except Exception as e:
+                    st.error(f"오류가 발생했습니다: {str(e)}")
+
+    # 현재 문제 표시
+    if st.session_state.current_problem:
+        problem = st.session_state.current_problem
+
+        st.markdown("---")
+        st.markdown(f"**주제:** {get_topic_display_name(problem.topic)} | "
+                    f"**난이도:** {get_difficulty_display_name(problem.difficulty)} | "
+                    f"**유형:** {get_problem_type_display_name(problem.problem_type)}")
+
+        # 문제 표시
+        st.markdown('<div class="problem-box">', unsafe_allow_html=True)
+        st.markdown(f"### 📋 문제")
+        st.markdown(problem.question)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # 객관식인 경우 선택지 표시
+        if problem.options:
+            st.markdown("### 선택지")
+            user_answer = st.radio(
+                "정답을 선택하세요:",
+                problem.options,
+                key="mc_answer",
+            )
+
+            if st.button("정답 확인"):
+                if user_answer == problem.answer:
+                    st.success("🎉 정답입니다!")
+                else:
+                    st.error(f"❌ 오답입니다. 정답: {problem.answer}")
+                st.markdown(f"**해설:** {problem.explanation}")
+
+        # 코딩/알고리즘 문제인 경우
+        elif problem.problem_type in [ProblemType.CODING, ProblemType.ALGORITHM, ProblemType.DEBUGGING]:
+            st.markdown("### 💻 코드 작성")
+            user_code = st.text_area(
+                "코드를 입력하세요:",
+                height=300,
+                key="code_answer",
+            )
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("제출하기", use_container_width=True):
+                    if user_code.strip():
+                        with st.spinner("코드 검토 중..."):
+                            try:
+                                review_agent = get_review_agent()
+                                result = review_agent.review_submission_sync(
+                                    code=user_code,
+                                    problem=problem,
+                                )
+
+                                if result.is_correct:
+                                    st.success(f"🎉 정답입니다! (점수: {result.score}/100)")
+                                else:
+                                    st.warning(f"아쉽네요! (점수: {result.score}/100)")
+
+                                st.markdown("### 📝 피드백")
+                                st.markdown(result.feedback)
+
+                                if result.suggestions:
+                                    st.markdown("### 💡 개선 제안")
+                                    for suggestion in result.suggestions:
+                                        st.markdown(f"- {suggestion}")
+
+                                if result.improved_code:
+                                    st.markdown("### ✨ 개선된 코드")
+                                    st.code(result.improved_code, language="python")
+
+                            except Exception as e:
+                                st.error(f"오류가 발생했습니다: {str(e)}")
+                    else:
+                        st.warning("코드를 입력해주세요.")
+
+            with col2:
+                if st.button("정답 보기", use_container_width=True):
+                    st.markdown("### ✅ 정답")
+                    st.code(problem.answer, language="python")
+                    st.markdown(f"**해설:** {problem.explanation}")
+
+        # 단답형인 경우
+        else:
+            user_answer = st.text_input("정답을 입력하세요:")
+            if st.button("정답 확인"):
+                st.markdown(f"**정답:** {problem.answer}")
+                st.markdown(f"**해설:** {problem.explanation}")
+
+        # 힌트 기능
+        if problem.hints:
+            st.markdown("---")
+            st.markdown("### 💡 힌트")
+            if st.button(f"힌트 보기 ({st.session_state.hint_index + 1}/{len(problem.hints)})"):
+                if st.session_state.hint_index < len(problem.hints):
+                    st.markdown(f'<div class="hint-box">{problem.hints[st.session_state.hint_index]}</div>',
+                                unsafe_allow_html=True)
+                    st.session_state.hint_index = min(
+                        st.session_state.hint_index + 1,
+                        len(problem.hints) - 1
+                    )
+
+    else:
+        st.info("👆 '새 문제 생성' 버튼을 클릭하여 문제를 시작하세요!")
+
+
+def review_mode():
+    """코드 리뷰 모드 UI"""
+    st.markdown("## 🔍 코드 리뷰 모드")
+    st.markdown("작성한 Python 코드를 리뷰받아보세요!")
+
+    user_code = st.text_area(
+        "리뷰받을 코드를 입력하세요:",
+        height=400,
+        placeholder="# 여기에 Python 코드를 입력하세요\n\ndef example():\n    pass",
+    )
+
+    if st.button("🔍 코드 리뷰 받기", use_container_width=True):
+        if user_code.strip():
+            with st.spinner("코드 분석 중..."):
+                try:
+                    review_agent = get_review_agent()
+                    result = review_agent.review_submission_sync(code=user_code)
+
+                    # 점수 표시
+                    score_color = "green" if result.score >= 70 else "orange" if result.score >= 40 else "red"
+                    st.markdown(f"### 점수: :{score_color}[{result.score}/100]")
+
+                    # 피드백
+                    st.markdown("### 📝 전반적인 피드백")
+                    st.markdown(result.feedback)
+
+                    # 개선 제안
+                    if result.suggestions:
+                        st.markdown("### 💡 개선 제안")
+                        for suggestion in result.suggestions:
+                            st.markdown(f"- {suggestion}")
+
+                    # 개선된 코드
+                    if result.improved_code:
+                        st.markdown("### ✨ 개선된 코드")
+                        st.code(result.improved_code, language="python")
+
+                except Exception as e:
+                    st.error(f"오류가 발생했습니다: {str(e)}")
+        else:
+            st.warning("코드를 입력해주세요.")
+
+
+def main():
+    """메인 함수"""
+    init_session_state()
+
+    # 사이드바
+    topic, difficulty = sidebar()
+
+    # 헤더
+    st.markdown('<p class="main-header">🐍 Python 교육 에이전트</p>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; color: gray;">LangChain + RAG 기반 맞춤형 Python 학습 도우미</p>',
+                unsafe_allow_html=True)
+    st.markdown("---")
+
+    # 모드별 UI
+    if st.session_state.mode == "학습":
+        learning_mode(topic, difficulty)
+    elif st.session_state.mode == "문제 풀기":
+        problem_mode(topic, difficulty)
+    else:
+        review_mode()
+
+
+if __name__ == "__main__":
+    main()
