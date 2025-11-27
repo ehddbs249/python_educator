@@ -2,6 +2,7 @@
 
 /* 전체 레이아웃 */
 @media (max-width: 768px) {
+
     /* 메인 컨테이너 */
     .main .block-container {
         padding-left: 1rem !important;
@@ -11,8 +12,9 @@
 
     /* 헤더 */
     .main-header {
-        font-size: 1.8rem !important;
-        margin-bottom: 1rem !important;
+        font-size: 2.2rem !important;
+        /* Increased from 1.8rem */
+        margin-bottom: 1.5rem !important;
         text-align: center;
     }
 
@@ -22,24 +24,26 @@
     }
 
     /* 컬럼 레이아웃 */
-    .row-widget.stHorizontal > div {
+    .row-widget.stHorizontal>div {
         flex: 1 1 100% !important;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
     }
 
     /* 버튼 */
-    .stButton > button {
+    .stButton>button {
         width: 100% !important;
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem !important;
-        padding: 0.5rem !important;
+        margin-bottom: 0.75rem;
+        font-size: 1rem !important;
+        /* Increased from 0.9rem */
+        padding: 0.75rem !important;
     }
 
     /* 입력 필드 */
-    .stTextInput > div > div > input,
-    .stTextArea > div > div > textarea,
-    .stSelectbox > div > div > select {
-        font-size: 16px !important; /* iOS 확대 방지 */
+    .stTextInput>div>div>input,
+    .stTextArea>div>div>textarea,
+    .stSelectbox>div>div>select {
+        font-size: 17px !important;
+        /* Increased from 16px */
     }
 
     /* 카드 스타일 */
@@ -48,72 +52,75 @@
     .hint-box,
     .success-box,
     .error-box {
-        margin: 0.5rem 0 !important;
-        padding: 1rem !important;
-        border-radius: 12px !important;
+        margin: 0.75rem 0 !important;
+        padding: 1.25rem !important;
+        border-radius: 16px !important;
     }
 
     /* 통계 카드 */
     .stat-card {
-        margin: 0.25rem 0 !important;
-        padding: 1rem !important;
-        border-radius: 12px !important;
+        margin: 0.5rem 0 !important;
+        padding: 1.25rem !important;
+        border-radius: 16px !important;
     }
 
     .stat-number {
-        font-size: 1.8rem !important;
+        font-size: 2.2rem !important;
+        /* Increased from 1.8rem */
     }
 
     .stat-label {
-        font-size: 0.8rem !important;
+        font-size: 0.9rem !important;
+        /* Increased from 0.8rem */
     }
 
     /* 코드 에디터 */
     .ace_editor {
         min-height: 200px !important;
-        font-size: 14px !important;
+        font-size: 15px !important;
+        /* Increased from 14px */
     }
 
     /* 채팅 메시지 */
     .stChatMessage {
-        margin-bottom: 0.5rem !important;
+        margin-bottom: 0.75rem !important;
     }
 
     /* 탭 */
-    .stTabs > div > div > div {
+    .stTabs>div>div>div {
         gap: 0.5rem;
     }
 
     .stTabs [data-baseweb="tab"] {
-        font-size: 0.9rem !important;
-        padding: 0.5rem 0.75rem !important;
+        font-size: 1rem !important;
+        padding: 0.75rem 1rem !important;
     }
 
     /* 메트릭 */
     .metric-container {
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
     }
 
     /* 확장 가능한 섹션 */
     .streamlit-expanderHeader {
-        font-size: 1rem !important;
+        font-size: 1.1rem !important;
     }
 
     /* 알림 */
     .stAlert {
-        margin: 0.5rem 0 !important;
-        padding: 0.75rem !important;
-        font-size: 0.9rem !important;
+        margin: 0.75rem 0 !important;
+        padding: 1rem !important;
+        font-size: 1rem !important;
     }
 
     /* 진행률 바 */
     .stProgress {
-        margin: 0.5rem 0 !important;
+        margin: 0.75rem 0 !important;
     }
 
     /* 데이터프레임 */
     .dataframe {
-        font-size: 0.8rem !important;
+        font-size: 0.9rem !important;
     }
 
     /* 차트 */
@@ -132,39 +139,40 @@
     }
 
     .main-header {
-        font-size: 2.2rem !important;
+        font-size: 2.8rem !important;
     }
 
-    .stButton > button {
-        font-size: 1rem !important;
-        padding: 0.75rem 1.5rem !important;
+    .stButton>button {
+        font-size: 1.1rem !important;
+        padding: 1rem 2rem !important;
     }
 
     .stat-number {
-        font-size: 2.2rem !important;
+        font-size: 2.8rem !important;
     }
 }
 
 /* 터치 스크린 최적화 */
 @media (hover: none) and (pointer: coarse) {
+
     /* 터치 타겟 최소 크기 */
-    .stButton > button,
+    .stButton>button,
     .stSelectbox,
     .stTextInput,
     .stCheckbox,
-    .stRadio > label {
+    .stRadio>label {
         min-height: 44px !important;
         min-width: 44px !important;
     }
 
     /* 호버 효과 제거 */
-    .stButton > button:hover {
+    .stButton>button:hover {
         transform: none !important;
         box-shadow: none !important;
     }
 
     /* 터치 피드백 추가 */
-    .stButton > button:active {
+    .stButton>button:active {
         transform: scale(0.95) !important;
         transition: transform 0.1s ease !important;
     }
@@ -199,7 +207,7 @@
 
 /* 고대비 모드 */
 @media (prefers-contrast: high) {
-    .stButton > button {
+    .stButton>button {
         border: 2px solid #000 !important;
     }
 
@@ -217,7 +225,7 @@
         font-size: 1.25em !important;
     }
 
-    .stButton > button {
+    .stButton>button {
         font-size: 1.1rem !important;
         padding: 1rem 1.5rem !important;
     }
