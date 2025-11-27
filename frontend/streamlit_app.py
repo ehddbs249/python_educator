@@ -51,18 +51,19 @@ st.markdown("""
         font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
         color: var(--text-color);
         background-color: var(--bg-color);
+        font-size: 18px; /* Base font size increased */
     }
 
     /* Main Header */
     .main-header {
-        font-size: 3rem;
+        font-size: 3.5rem; /* Increased from 3rem */
         font-weight: 800;
         background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center;
-        margin-bottom: 2.5rem;
-        padding: 1rem 0;
+        margin-bottom: 3rem;
+        padding: 1.5rem 0;
         animation: fadeInDown 0.8s ease-out;
     }
 
@@ -70,10 +71,10 @@ st.markdown("""
     .mode-card, .problem-box, .stat-card {
         background: var(--card-bg);
         backdrop-filter: blur(10px);
-        border-radius: 16px;
+        border-radius: 20px; /* Slightly more rounded */
         border: 1px solid rgba(255, 255, 255, 0.5);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        padding: 2rem;
+        padding: 2.5rem; /* Increased padding */
         margin: 1.5rem 0;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
@@ -85,24 +86,25 @@ st.markdown("""
 
     /* Problem Box Specifics */
     .problem-box {
-        border-left: 5px solid var(--primary-color);
+        border-left: 6px solid var(--primary-color); /* Thicker border */
         background: linear-gradient(to right, rgba(99, 102, 241, 0.05), rgba(255, 255, 255, 0.8));
     }
 
     /* Alert Boxes */
     .hint-box, .success-box, .error-box {
-        padding: 1.25rem;
-        border-radius: 12px;
-        margin: 1rem 0;
+        padding: 1.5rem;
+        border-radius: 16px;
+        margin: 1.25rem 0;
         display: flex;
         align-items: center;
-        gap: 0.75rem;
+        gap: 1rem;
+        font-size: 1.1rem; /* Larger alert text */
         animation: fadeIn 0.5s ease-out;
     }
 
-    .hint-box { background-color: var(--warning-bg); border-left: 5px solid var(--warning-border); }
-    .success-box { background-color: var(--success-bg); border-left: 5px solid var(--success-border); }
-    .error-box { background-color: var(--error-bg); border-left: 5px solid var(--error-border); }
+    .hint-box { background-color: var(--warning-bg); border-left: 6px solid var(--warning-border); }
+    .success-box { background-color: var(--success-bg); border-left: 6px solid var(--success-border); }
+    .error-box { background-color: var(--error-bg); border-left: 6px solid var(--error-border); }
 
     /* Stat Cards */
     .stat-card {
@@ -116,21 +118,21 @@ st.markdown("""
     .stat-card::before {
         content: '';
         position: absolute;
-        top: 0; left: 0; right: 0; height: 4px;
+        top: 0; left: 0; right: 0; height: 5px;
         background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
     }
 
     .stat-number {
-        font-size: 3rem;
+        font-size: 3.5rem; /* Increased from 3rem */
         font-weight: 800;
         color: var(--primary-dark);
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
     }
 
     .stat-label {
-        font-size: 1rem;
+        font-size: 1.1rem; /* Increased from 1rem */
         color: var(--text-light);
-        font-weight: 500;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
@@ -138,9 +140,10 @@ st.markdown("""
     /* Buttons */
     .stButton > button {
         width: 100%;
-        border-radius: 12px;
-        font-weight: 600;
-        padding: 0.75rem 1.5rem;
+        border-radius: 14px;
+        font-weight: 700; /* Bolder text */
+        font-size: 1.1rem; /* Larger button text */
+        padding: 1rem 2rem; /* Larger button padding */
         transition: all 0.2s ease;
         border: none;
         background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
@@ -158,9 +161,10 @@ st.markdown("""
 
     /* Inputs */
     .stTextInput > div > div > input, .stSelectbox > div > div > div {
-        border-radius: 10px;
+        border-radius: 12px;
         border: 1px solid #e2e8f0;
-        padding: 0.5rem 1rem;
+        padding: 0.75rem 1.25rem; /* Larger input padding */
+        font-size: 1.1rem; /* Larger input text */
         transition: all 0.2s;
     }
 
