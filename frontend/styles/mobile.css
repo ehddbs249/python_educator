@@ -1,4 +1,4 @@
-/* 모바일 반응형 스타일 for Python 교육 에이전트 */
+/* 모바일 반응형 스타일 for Midnight Glass Theme */
 
 /* 전체 레이아웃 */
 @media (max-width: 768px) {
@@ -12,10 +12,8 @@
 
     /* 헤더 */
     .main-header {
-        font-size: 2.2rem !important;
-        /* Increased from 1.8rem */
-        margin-bottom: 1.5rem !important;
-        text-align: center;
+        font-size: 2.5rem !important;
+        margin-bottom: 2rem !important;
     }
 
     /* 사이드바 */
@@ -26,24 +24,14 @@
     /* 컬럼 레이아웃 */
     .row-widget.stHorizontal>div {
         flex: 1 1 100% !important;
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
     }
 
     /* 버튼 */
     .stButton>button {
         width: 100% !important;
-        margin-bottom: 0.75rem;
-        font-size: 1rem !important;
-        /* Increased from 0.9rem */
-        padding: 0.75rem !important;
-    }
-
-    /* 입력 필드 */
-    .stTextInput>div>div>input,
-    .stTextArea>div>div>textarea,
-    .stSelectbox>div>div>select {
-        font-size: 17px !important;
-        /* Increased from 16px */
+        margin-bottom: 1rem;
+        padding: 1rem !important;
     }
 
     /* 카드 스타일 */
@@ -51,34 +39,20 @@
     .problem-box,
     .hint-box,
     .success-box,
-    .error-box {
-        margin: 0.75rem 0 !important;
-        padding: 1.25rem !important;
-        border-radius: 16px !important;
-    }
-
-    /* 통계 카드 */
+    .error-box,
     .stat-card {
-        margin: 0.5rem 0 !important;
-        padding: 1.25rem !important;
-        border-radius: 16px !important;
+        margin: 1rem 0 !important;
+        padding: 1.5rem !important;
     }
 
+    /* 통계 숫자 */
     .stat-number {
-        font-size: 2.2rem !important;
-        /* Increased from 1.8rem */
-    }
-
-    .stat-label {
-        font-size: 0.9rem !important;
-        /* Increased from 0.8rem */
+        font-size: 2.5rem !important;
     }
 
     /* 코드 에디터 */
     .ace_editor {
         min-height: 200px !important;
-        font-size: 15px !important;
-        /* Increased from 14px */
     }
 
     /* 채팅 메시지 */

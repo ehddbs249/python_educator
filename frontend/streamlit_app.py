@@ -29,214 +29,180 @@ st.markdown("""
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
     :root {
-        --primary-color: #6366f1;
-        --primary-dark: #4f46e5;
-        --secondary-color: #ec4899;
-        --bg-color: #f8fafc;
-        --card-bg: rgba(255, 255, 255, 0.8);
-        --text-color: #1e293b;
-        --text-light: #64748b;
-        --success-bg: #dcfce7;
-        --success-border: #22c55e;
-        --error-bg: #fee2e2;
-        --error-border: #ef4444;
-        --warning-bg: #fef3c7;
-        --warning-border: #f59e0b;
-        --info-bg: #e0f2fe;
-        --info-border: #0ea5e9;
+        /* Midnight Glass Palette */
+        --bg-dark: #0f172a;
+        --bg-darker: #020617;
+        --primary: #6366f1;       /* Indigo */
+        --primary-glow: rgba(99, 102, 241, 0.5);
+        --secondary: #8b5cf6;     /* Violet */
+        --accent: #10b981;        /* Emerald */
+        
+        --glass-bg: rgba(30, 41, 59, 0.4);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --glass-highlight: rgba(255, 255, 255, 0.05);
+        
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        
+        --card-radius: 24px;
     }
 
-    /* Global Styles */
-    html, body, [class*="css"] {
-        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-        color: var(--text-color);
-        background-color: var(--bg-color);
-        font-size: 18px; /* Base font size increased */
+    /* Reset & Base */
+    .stApp {
+        background-color: var(--bg-dark);
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 20%),
+            radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 20%);
+        font-family: 'Pretendard', sans-serif;
+        color: var(--text-main);
     }
 
-    /* Main Header */
-    .main-header {
-        font-size: 3.5rem; /* Increased from 3rem */
-        font-weight: 800;
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    /* Hide Default Streamlit Elements */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+
+    /* Typography */
+    h1, h2, h3 {
+        font-weight: 800 !important;
+        letter-spacing: -0.02em;
+        background: linear-gradient(to right, #fff, #cbd5e1);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        text-align: center;
-        margin-bottom: 3rem;
-        padding: 1.5rem 0;
-        animation: fadeInDown 0.8s ease-out;
     }
 
-    /* Cards */
-    .mode-card, .problem-box, .stat-card {
-        background: var(--card-bg);
-        backdrop-filter: blur(10px);
-        border-radius: 20px; /* Slightly more rounded */
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        padding: 2.5rem; /* Increased padding */
-        margin: 1.5rem 0;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .mode-card:hover, .problem-box:hover, .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    }
-
-    /* Problem Box Specifics */
-    .problem-box {
-        border-left: 6px solid var(--primary-color); /* Thicker border */
-        background: linear-gradient(to right, rgba(99, 102, 241, 0.05), rgba(255, 255, 255, 0.8));
-    }
-
-    /* Alert Boxes */
-    .hint-box, .success-box, .error-box {
-        padding: 1.5rem;
-        border-radius: 16px;
-        margin: 1.25rem 0;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        font-size: 1.1rem; /* Larger alert text */
-        animation: fadeIn 0.5s ease-out;
-    }
-
-    .hint-box { background-color: var(--warning-bg); border-left: 6px solid var(--warning-border); }
-    .success-box { background-color: var(--success-bg); border-left: 6px solid var(--success-border); }
-    .error-box { background-color: var(--error-bg); border-left: 6px solid var(--error-border); }
-
-    /* Stat Cards */
-    .stat-card {
-        background: white;
-        text-align: center;
-        border: none;
+    /* Glass Cards */
+    .mode-card, .problem-box, .stat-card, .stChatMessage {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--card-radius);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        padding: 2rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
     }
-    
-    .stat-card::before {
+
+    .mode-card::before, .problem-box::before, .stat-card::before {
         content: '';
         position: absolute;
-        top: 0; left: 0; right: 0; height: 5px;
-        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(180deg, var(--glass-highlight) 0%, transparent 100%);
+        pointer-events: none;
     }
 
-    .stat-number {
-        font-size: 3.5rem; /* Increased from 3rem */
-        font-weight: 800;
-        color: var(--primary-dark);
-        margin-bottom: 0.75rem;
+    .mode-card:hover, .problem-box:hover, .stat-card:hover {
+        transform: translateY(-5px) scale(1.01);
+        border-color: var(--primary);
+        box-shadow: 0 20px 40px 0 rgba(0, 0, 0, 0.4), 0 0 20px var(--primary-glow);
     }
 
-    .stat-label {
-        font-size: 1.1rem; /* Increased from 1rem */
-        color: var(--text-light);
-        font-weight: 600;
+    /* Custom Buttons */
+    .stButton > button {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border: none;
+        border-radius: 16px;
+        color: white;
+        font-weight: 700;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px var(--primary-glow);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-    }
-
-    /* Buttons */
-    .stButton > button {
-        width: 100%;
-        border-radius: 14px;
-        font-weight: 700; /* Bolder text */
-        font-size: 1.1rem; /* Larger button text */
-        padding: 1rem 2rem; /* Larger button padding */
-        transition: all 0.2s ease;
-        border: none;
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-        color: white;
+        font-size: 0.9rem;
     }
 
     .stButton > button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-    }
-
-    .stButton > button:active {
-        transform: translateY(0);
+        box-shadow: 0 8px 25px var(--primary-glow);
+        filter: brightness(1.1);
     }
 
     /* Inputs */
-    .stTextInput > div > div > input, .stSelectbox > div > div > div {
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        padding: 0.75rem 1.25rem; /* Larger input padding */
-        font-size: 1.1rem; /* Larger input text */
-        transition: all 0.2s;
+    .stTextInput > div > div > input, 
+    .stSelectbox > div > div > div, 
+    .stTextArea > div > div > textarea {
+        background: rgba(15, 23, 42, 0.6) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 12px !important;
+        color: var(--text-main) !important;
+        transition: all 0.3s ease;
     }
 
-    .stTextInput > div > div > input:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    .stTextInput > div > div > input:focus, 
+    .stSelectbox > div > div > div:focus-within,
+    .stTextArea > div > div > textarea:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 2px var(--primary-glow) !important;
+        background: rgba(15, 23, 42, 0.8) !important;
+    }
+
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] {
+        background-color: var(--bg-darker);
+        border-right: 1px solid var(--glass-border);
+    }
+
+    /* Radio Buttons as Nav */
+    .stRadio > div {
+        background: transparent;
+        border: none;
+    }
+    
+    .stRadio > div > label {
+        background: transparent;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .stRadio > div > label:hover {
+        background: var(--glass-bg);
+        border-color: var(--glass-border);
+    }
+
+    /* Stat Numbers */
+    .stat-number {
+        font-size: 3.5rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 30px var(--primary-glow);
+    }
+
+    /* Alert Boxes */
+    .success-box {
+        background: rgba(16, 185, 129, 0.1);
+        border-left: 4px solid var(--accent);
+        color: #d1fae5;
+    }
+    
+    .error-box {
+        background: rgba(239, 68, 68, 0.1);
+        border-left: 4px solid #ef4444;
+        color: #fee2e2;
+    }
+
+    .hint-box {
+        background: rgba(245, 158, 11, 0.1);
+        border-left: 4px solid #f59e0b;
+        color: #fef3c7;
     }
 
     /* Animations */
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
     }
 
-    @keyframes fadeInDown {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Sidebar */
-    [data-testid="stSidebar"] {
-        background-color: #f1f5f9;
-        border-right: 1px solid #e2e8f0;
-    }
-    
-    /* Weak Topic Tag */
-    .weak-topic {
-        background-color: var(--error-bg);
-        color: var(--error-border);
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        display: inline-block;
-        margin: 0.25rem;
-    }
-
-    /* Dark Mode Support */
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.8);
-            --text-color: #f1f5f9;
-            --text-light: #94a3b8;
-            --success-bg: #064e3b;
-            --success-border: #34d399;
-            --error-bg: #450a0a;
-            --error-border: #f87171;
-            --warning-bg: #451a03;
-            --warning-border: #fbbf24;
-            --info-bg: #0c4a6e;
-            --info-border: #38bdf8;
-        }
-        
-        .stat-card {
-            background: #1e293b;
-        }
-        
-        .stat-number {
-            color: #818cf8;
-        }
-        
-        [data-testid="stSidebar"] {
-            background-color: #1e293b;
-            border-right: 1px solid #334155;
-        }
-        
-        .stTextInput > div > div > input, .stSelectbox > div > div > div {
-            background-color: #1e293b;
-            border-color: #334155;
-            color: white;
-        }
+    .floating {
+        animation: float 6s ease-in-out infinite;
     }
 
 </style>
@@ -446,8 +412,17 @@ def sidebar():
 
 def learning_mode(topic: TopicCategory, difficulty: DifficultyLevel):
     """학습 모드 UI"""
-    st.markdown("## 🎓 학습 모드")
-    st.markdown("Python 개념에 대해 질문해보세요!")
+    # Hero Section
+    st.markdown(f"""
+    <div class="mode-card floating" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.2);">
+        <h1 style="text-align: center; margin-bottom: 0.5rem;">🎓 Python 마스터하기</h1>
+        <p style="text-align: center; color: var(--text-muted); font-size: 1.2rem;">
+            AI 튜터와 함께 <strong>{get_topic_display_name(topic)}</strong> 정복을 시작해보세요.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("### 💬 학습 대화")
 
     # 채팅 히스토리 표시
     for msg in st.session_state.chat_history:
@@ -896,8 +871,8 @@ def dashboard_mode():
     with col2:
         accuracy = stats['accuracy']
         st.markdown(f"""
-        <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-            <div class="stat-number">{accuracy:.1f}%</div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: #10b981;">{accuracy:.1f}%</div>
             <div class="stat-label">정답률</div>
         </div>
         """, unsafe_allow_html=True)
@@ -905,8 +880,8 @@ def dashboard_mode():
     with col3:
         avg_score = stats['average_score']
         st.markdown(f"""
-        <div class="stat-card" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
-            <div class="stat-number">{avg_score:.1f}</div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: #f59e0b;">{avg_score:.1f}</div>
             <div class="stat-label">평균 점수</div>
         </div>
         """, unsafe_allow_html=True)
@@ -914,8 +889,8 @@ def dashboard_mode():
     with col4:
         topics_studied = len(stats['by_topic'])
         st.markdown(f"""
-        <div class="stat-card" style="background: linear-gradient(135deg, #4776E6 0%, #8E54E9 100%);">
-            <div class="stat-number">{topics_studied}</div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: #8b5cf6;">{topics_studied}</div>
             <div class="stat-label">학습한 주제</div>
         </div>
         """, unsafe_allow_html=True)
