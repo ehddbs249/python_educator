@@ -26,72 +26,227 @@ st.set_page_config(
 # CSS 스타일
 st.markdown("""
 <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+    :root {
+        --primary-color: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary-color: #ec4899;
+        --bg-color: #f8fafc;
+        --card-bg: rgba(255, 255, 255, 0.8);
+        --text-color: #1e293b;
+        --text-light: #64748b;
+        --success-bg: #dcfce7;
+        --success-border: #22c55e;
+        --error-bg: #fee2e2;
+        --error-border: #ef4444;
+        --warning-bg: #fef3c7;
+        --warning-border: #f59e0b;
+        --info-bg: #e0f2fe;
+        --info-border: #0ea5e9;
+    }
+
+    /* Global Styles */
+    html, body, [class*="css"] {
+        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        color: var(--text-color);
+        background-color: var(--bg-color);
+    }
+
+    /* Main Header */
     .main-header {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #1E88E5;
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 2.5rem;
+        padding: 1rem 0;
+        animation: fadeInDown 0.8s ease-out;
     }
-    .mode-card {
-        background-color: #f0f2f6;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin: 1rem 0;
+
+    /* Cards */
+    .mode-card, .problem-box, .stat-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 2rem;
+        margin: 1.5rem 0;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
+
+    .mode-card:hover, .problem-box:hover, .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Problem Box Specifics */
     .problem-box {
-        background-color: #e3f2fd;
-        border-left: 4px solid #1E88E5;
-        padding: 1rem;
+        border-left: 5px solid var(--primary-color);
+        background: linear-gradient(to right, rgba(99, 102, 241, 0.05), rgba(255, 255, 255, 0.8));
+    }
+
+    /* Alert Boxes */
+    .hint-box, .success-box, .error-box {
+        padding: 1.25rem;
+        border-radius: 12px;
         margin: 1rem 0;
-        border-radius: 0 10px 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: fadeIn 0.5s ease-out;
     }
-    .hint-box {
-        background-color: #fff3e0;
-        border-left: 4px solid #ff9800;
-        padding: 1rem;
-        margin: 0.5rem 0;
-        border-radius: 0 10px 10px 0;
-    }
-    .success-box {
-        background-color: #e8f5e9;
-        border-left: 4px solid #4caf50;
-        padding: 1rem;
-        margin: 1rem 0;
-        border-radius: 0 10px 10px 0;
-    }
-    .error-box {
-        background-color: #ffebee;
-        border-left: 4px solid #f44336;
-        padding: 1rem;
-        margin: 1rem 0;
-        border-radius: 0 10px 10px 0;
-    }
+
+    .hint-box { background-color: var(--warning-bg); border-left: 5px solid var(--warning-border); }
+    .success-box { background-color: var(--success-bg); border-left: 5px solid var(--success-border); }
+    .error-box { background-color: var(--error-bg); border-left: 5px solid var(--error-border); }
+
+    /* Stat Cards */
     .stat-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 15px;
-        padding: 1.5rem;
-        color: white;
+        background: white;
         text-align: center;
-        margin: 0.5rem 0;
+        border: none;
+        position: relative;
+        overflow: hidden;
     }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    }
+
     .stat-number {
-        font-size: 2.5rem;
-        font-weight: bold;
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--primary-dark);
+        margin-bottom: 0.5rem;
     }
+
     .stat-label {
-        font-size: 0.9rem;
-        opacity: 0.9;
+        font-size: 1rem;
+        color: var(--text-light);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
-    .weak-topic {
-        background-color: #ffebee;
-        border-left: 4px solid #f44336;
+
+    /* Buttons */
+    .stButton > button {
+        width: 100%;
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.2s ease;
+        border: none;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+    }
+
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .stButton > button:active {
+        transform: translateY(0);
+    }
+
+    /* Inputs */
+    .stTextInput > div > div > input, .stSelectbox > div > div > div {
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
         padding: 0.5rem 1rem;
-        margin: 0.3rem 0;
-        border-radius: 0 5px 5px 0;
+        transition: all 0.2s;
     }
+
+    .stTextInput > div > div > input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #f1f5f9;
+        border-right: 1px solid #e2e8f0;
+    }
+    
+    /* Weak Topic Tag */
+    .weak-topic {
+        background-color: var(--error-bg);
+        color: var(--error-border);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-block;
+        margin: 0.25rem;
+    }
+
+    /* Dark Mode Support */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --text-color: #f1f5f9;
+            --text-light: #94a3b8;
+            --success-bg: #064e3b;
+            --success-border: #34d399;
+            --error-bg: #450a0a;
+            --error-border: #f87171;
+            --warning-bg: #451a03;
+            --warning-border: #fbbf24;
+            --info-bg: #0c4a6e;
+            --info-border: #38bdf8;
+        }
+        
+        .stat-card {
+            background: #1e293b;
+        }
+        
+        .stat-number {
+            color: #818cf8;
+        }
+        
+        [data-testid="stSidebar"] {
+            background-color: #1e293b;
+            border-right: 1px solid #334155;
+        }
+        
+        .stTextInput > div > div > input, .stSelectbox > div > div > div {
+            background-color: #1e293b;
+            border-color: #334155;
+            color: white;
+        }
+    }
+
 </style>
 """, unsafe_allow_html=True)
+
+# Load Mobile CSS
+def load_css(file_name):
+    with open(file_name) as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+css_path = Path(__file__).parent / "styles" / "mobile.css"
+if css_path.exists():
+    load_css(css_path)
+
 
 
 def init_session_state():

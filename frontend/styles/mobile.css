@@ -50,14 +50,14 @@
     .error-box {
         margin: 0.5rem 0 !important;
         padding: 1rem !important;
-        border-radius: 8px !important;
+        border-radius: 12px !important;
     }
 
     /* 통계 카드 */
     .stat-card {
         margin: 0.25rem 0 !important;
         padding: 1rem !important;
-        border-radius: 10px !important;
+        border-radius: 12px !important;
     }
 
     .stat-number {
@@ -142,34 +142,6 @@
 
     .stat-number {
         font-size: 2.2rem !important;
-    }
-}
-
-/* 다크 모드 지원 */
-@media (prefers-color-scheme: dark) {
-    .mode-card {
-        background-color: #1e1e1e !important;
-        border: 1px solid #333 !important;
-    }
-
-    .problem-box {
-        background-color: #1a237e !important;
-        border-left-color: #3f51b5 !important;
-    }
-
-    .hint-box {
-        background-color: #2d2d2d !important;
-        border-left-color: #ff9800 !important;
-    }
-
-    .success-box {
-        background-color: #1b5e20 !important;
-        border-left-color: #4caf50 !important;
-    }
-
-    .error-box {
-        background-color: #b71c1c !important;
-        border-left-color: #f44336 !important;
     }
 }
 
