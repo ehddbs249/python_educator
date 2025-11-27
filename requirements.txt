@@ -5,6 +5,11 @@ langchain-community>=0.0.20
 langchain-chroma>=0.1.0
 langchain-huggingface>=1.1.0
 
+# HuggingFace & Transformers
+transformers>=4.30.0
+sentence-transformers>=2.2.0
+torch>=2.0.0
+
 # Vector DB
 chromadb>=0.4.22
 

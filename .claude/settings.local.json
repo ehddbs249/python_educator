@@ -25,7 +25,8 @@
       "Bash(claude mcp auth:*)",
       "Bash(python test:*)",
       "Bash(C:Usersdonganaconda3python.exe test_supabase.py)",
-      "Bash(C:Usersdonganaconda3python.exe simple_test.py)"
+      "Bash(C:Usersdonganaconda3python.exe simple_test.py)",
+      "Bash(C:Usersdonganaconda3python.exe -m pip install transformers sentence-transformers torch)"
     ],
     "deny": [],
     "ask": []

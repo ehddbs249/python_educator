@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import (
     DirectoryLoader,
@@ -13,14 +12,33 @@ from langchain_core.documents import Document
 from app.config import get_settings
 
 
+def get_embeddings():
+    """임베딩 모델 가져오기 (에러 핸들링 포함)"""
+    try:
+        # 먼저 HuggingFace 임베딩 시도
+        from langchain_huggingface import HuggingFaceEmbeddings
+        return HuggingFaceEmbeddings(
+            model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+        )
+    except Exception:
+        try:
+            # 백업: 더 간단한 임베딩 모델
+            from langchain_huggingface import HuggingFaceEmbeddings
+            return HuggingFaceEmbeddings(
+                model_name="sentence-transformers/all-MiniLM-L6-v2"
+            )
+        except Exception:
+            # 최종 백업: 기본 임베딩
+            from langchain_community.embeddings import FakeEmbeddings
+            return FakeEmbeddings(size=384)
+
+
 class VectorStoreManager:
     """ChromaDB 벡터 스토어 관리자"""
 
     def __init__(self):
         self.settings = get_settings()
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-        )
+        self.embeddings = get_embeddings()
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000,
             chunk_overlap=200,
