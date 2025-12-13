@@ -205,13 +205,62 @@ st.markdown("""
         animation: float 6s ease-in-out infinite;
     }
 
+    /* Main Header */
+    .main-header {
+        font-size: 3rem;
+        font-weight: 900;
+        text-align: center;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 30px var(--primary-glow);
+    }
+
+    /* Stat Card Labels */
+    .stat-label {
+        font-size: 1rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        margin-top: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Weak Topic Badge */
+    .weak-topic {
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        color: var(--text-main);
+    }
+
+    /* Recommendation Card */
+    .recommendation-card {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        color: var(--text-main);
+    }
+
+    .recommendation-card small {
+        color: var(--text-muted);
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
 # Load Mobile CSS
 def load_css(file_name):
-    with open(file_name) as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+    try:
+        with open(file_name, encoding='utf-8') as f:
+            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+    except Exception:
+        pass  # CSS 로드 실패해도 앱 동작에 영향 없음
 
 css_path = Path(__file__).parent / "styles" / "mobile.css"
 if css_path.exists():
@@ -964,7 +1013,7 @@ def dashboard_mode():
                 topic_name = get_topic_display_name(rec['topic'])
                 priority_icon = "🔴" if rec['priority'] == "high" else "🟡"
                 st.markdown(f"""
-                <div style="background-color: #e8f5e9; padding: 0.5rem 1rem; margin: 0.3rem 0; border-radius: 5px; border-left: 4px solid #4caf50;">
+                <div class="recommendation-card">
                     {priority_icon} <strong>{topic_name}</strong><br/>
                     <small>{rec['reason']}</small>
                 </div>
@@ -1015,7 +1064,7 @@ def main():
     # 로그인 체크
     if not st.session_state.username:
         st.markdown('<p class="main-header">🐍 Python 교육 에이전트</p>', unsafe_allow_html=True)
-        st.markdown('<p style="text-align: center; color: gray;">LangChain + RAG 기반 맞춤형 Python 학습 도우미</p>',
+        st.markdown('<p style="text-align: center; color: var(--text-muted);">LangChain + RAG 기반 맞춤형 Python 학습 도우미</p>',
                     unsafe_allow_html=True)
         st.markdown("---")
 
@@ -1029,7 +1078,7 @@ def main():
 
     # 헤더
     st.markdown('<p class="main-header">🐍 Python 교육 에이전트</p>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align: center; color: gray;">LangChain + RAG 기반 맞춤형 Python 학습 도우미</p>',
+    st.markdown('<p style="text-align: center; color: var(--text-muted);">LangChain + RAG 기반 맞춤형 Python 학습 도우미</p>',
                 unsafe_allow_html=True)
     st.markdown("---")
 
